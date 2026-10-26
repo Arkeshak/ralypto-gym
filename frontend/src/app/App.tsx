@@ -151,7 +151,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 function AppShell() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { role, setRole, theme, setTheme, locale, setLocale } = useGymStore();
+  const { role, setRole, plan, setPlan, theme, setTheme, locale, setLocale } = useGymStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -199,6 +199,16 @@ function AppShell() {
             <button className="topbar-icon-button notification-button icon-button" aria-label="Notifications" onClick={() => toast.message("You're all caught up.")}>
               <Bell size={18} /><span />
             </button>
+            {import.meta.env.VITE_DEV_TOOLS === "true" && (
+              <label className="role-select-label dev-plan-switcher" aria-label="Dev gym plan">
+                <select value={plan} onChange={(event) => setPlan(event.target.value as any)} aria-label="Dev switch gym plan">
+                  <option value="Basic">Dev: Basic</option>
+                  <option value="Standard">Dev: Standard</option>
+                  <option value="Premium">Dev: Premium</option>
+                </select>
+                <ChevronDown size={13} />
+              </label>
+            )}
             <label className="role-select-label" aria-label="Demo user role">
               <select value={role} onChange={(event) => setRole(event.target.value as typeof role)} aria-label="Switch demo role">
                 <option value="Owner">Owner</option>

@@ -11,6 +11,7 @@ import {
 
 type Role = "Owner" | "Manager" | "Front desk" | "Trainer";
 type Theme = "dark" | "light";
+export type GymPlan = "Basic" | "Standard" | "Premium";
 
 type GymStore = {
   members: Member[];
@@ -18,10 +19,12 @@ type GymStore = {
   classes: ClassSession[];
   role: Role;
   theme: Theme;
+  plan: GymPlan;
   locale: "en" | "si" | "ta";
   checkedInIds: string[];
   setRole: (role: Role) => void;
   setTheme: (theme: Theme) => void;
+  setPlan: (plan: GymPlan) => void;
   setLocale: (locale: "en" | "si" | "ta") => void;
   addMember: (member: Pick<Member, "name" | "phone" | "email" | "goal" | "plan">) => void;
   checkIn: (memberId: string) => boolean;
@@ -38,6 +41,7 @@ const startingState = {
   classes: initialClasses,
   role: "Owner" as const,
   theme: "dark" as const,
+  plan: "Premium" as GymPlan,
   locale: "en" as const,
   checkedInIds: [] as string[],
 };
@@ -48,6 +52,7 @@ export const useGymStore = create<GymStore>()(
       ...startingState,
       setRole: (role) => set({ role }),
       setTheme: (theme) => set({ theme }),
+      setPlan: (plan) => set({ plan }),
       setLocale: (locale) => set({ locale }),
       addMember: (form) => {
         const nextNumber = 1100 + get().members.length;
@@ -122,6 +127,7 @@ export const useGymStore = create<GymStore>()(
         classes: state.classes,
         role: state.role,
         theme: state.theme,
+        plan: state.plan,
         locale: state.locale,
         checkedInIds: state.checkedInIds,
       }),

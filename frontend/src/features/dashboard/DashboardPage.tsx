@@ -22,6 +22,7 @@ import {
   Tooltip,
   XAxis,
 } from "recharts";
+import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Avatar, SectionHeading } from "../../components/ui";
@@ -35,6 +36,7 @@ function StatCard({
   change,
   icon: Icon,
   shade = "green",
+  index = 0,
 }: {
   title: string;
   value: string;
@@ -42,12 +44,19 @@ function StatCard({
   change: "up" | "down";
   icon: React.ElementType;
   shade?: "green" | "neutral" | "amber";
+  index?: number;
 }) {
   return (
-    <article className="stat-card">
+    <motion.article
+      className="stat-card"
+      initial={{ opacity: 0, y: 14 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, delay: index * 0.07 }}
+      whileHover={{ y: -3, transition: { duration: 0.18 } }}
+    >
       <div className="stat-card-top">
         <span>{title}</span>
-        <span className={`stat-icon stat-icon-${shade}`}><Icon size={17} strokeWidth={1.7} /></span>
+        <span className={`stat-icon stat-icon-${shade}`}><Icon size={18} strokeWidth={1.8} /></span>
       </div>
       <div className="stat-card-value">{value}</div>
       <div className="stat-card-foot">
@@ -57,7 +66,7 @@ function StatCard({
         </span>
         <span>vs last week</span>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -168,7 +177,12 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-page">
-      <header className="dashboard-welcome">
+      <motion.header
+        className="dashboard-welcome"
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
         <div className="dashboard-welcome-copy">
           <span className="welcome-date">{arrivalText} <span> / </span> Iron Peak Fitness</span>
           <h1>Good morning, Aru.</h1>
@@ -182,13 +196,13 @@ export default function DashboardPage() {
           <div className="welcome-image-caption"><span className="live-pulse" /><span>CLUB STATUS</span><b>All systems running</b></div>
         </div>
         <div className="welcome-glow" aria-hidden="true" />
-      </header>
+      </motion.header>
 
       <div className="stats-grid">
-        <StatCard title="Active members" value={String(activeMembers + 112)} delta="+8.4%" change="up" icon={Users} />
-        <StatCard title="Check-ins today" value={String(84 + checkins.length)} delta="+12.1%" change="up" icon={Activity} shade="neutral" />
-        <StatCard title="Collected today" value={money(revenue + 126400)} delta="+6.2%" change="up" icon={CircleDollarSign} shade="neutral" />
-        <StatCard title="Renewals due" value={String(expiring + 8)} delta="4 this week" change="down" icon={CalendarClock} shade="amber" />
+        <StatCard index={0} title="Active members" value={String(activeMembers + 112)} delta="+8.4%" change="up" icon={Users} />
+        <StatCard index={1} title="Check-ins today" value={String(84 + checkins.length)} delta="+12.1%" change="up" icon={Activity} shade="neutral" />
+        <StatCard index={2} title="Collected today" value={money(revenue + 126400)} delta="+6.2%" change="up" icon={CircleDollarSign} shade="neutral" />
+        <StatCard index={3} title="Renewals due" value={String(expiring + 8)} delta="4 this week" change="down" icon={CalendarClock} shade="amber" />
       </div>
 
       <div className="dashboard-main-grid">

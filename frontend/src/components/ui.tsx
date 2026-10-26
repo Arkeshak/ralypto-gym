@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ArrowRight, Check, Search, X } from "lucide-react";
+import { ArrowRight, Check, Search, ShieldCheck, X } from "lucide-react";
+import { Link } from "react-router-dom";
 import { createPortal } from "react-dom";
 import type { MemberStatus } from "../data/demo";
 
@@ -239,4 +240,27 @@ export function ConfirmAction({
 export function useModalState() {
   const [open, setOpen] = useState(false);
   return { open, show: () => setOpen(true), close: () => setOpen(false) };
+}
+
+export function UpgradeCard({
+  featureName,
+  requiredPlan = "Standard",
+}: {
+  featureName: string;
+  requiredPlan?: "Standard" | "Premium";
+}) {
+  return (
+    <div className="panel upgrade-card" style={{ padding: "48px 24px", textAlign: "center", maxWidth: "560px", margin: "40px auto" }}>
+      <div style={{ width: "48px", height: "48px", borderRadius: "12px", background: "rgba(181, 242, 74, 0.12)", color: "#b5f24a", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: "16px" }}>
+        <ShieldCheck size={24} />
+      </div>
+      <h2 style={{ fontSize: "20px", fontWeight: 700, marginBottom: "8px" }}>Upgrade to unlock {featureName}</h2>
+      <p style={{ color: "var(--muted-2, #888)", fontSize: "14px", marginBottom: "24px", lineHeight: "1.5" }}>
+        {featureName} is available on the {requiredPlan} tier and above. Upgrade your gym's plan to unlock full access for your staff and members.
+      </p>
+      <Link to="/app/subscription" className="button button-primary" style={{ display: "inline-flex" }}>
+        View subscription plans <ArrowRight size={15} />
+      </Link>
+    </div>
+  );
 }

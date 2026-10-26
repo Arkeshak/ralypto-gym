@@ -38,15 +38,17 @@ import {
   UserRoundPlus,
   Users,
   WalletCards,
+  Smartphone,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import { QRCodeSVG } from "qrcode.react";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useGymStore } from "../app/use-gym-store";
+import { useGymStore, type GymPlan } from "../app/use-gym-store";
 import { money, type Member, type Payment } from "../data/demo";
 import {
   Avatar,
@@ -59,6 +61,7 @@ import {
   SectionHeading,
   StatusPill,
   Toggle,
+  UpgradeCard,
   useModalState,
 } from "../components/ui";
 import {
@@ -89,21 +92,57 @@ export function LoginPage({ onLogin }: { onLogin: () => void }) {
     <main className="login-page">
       <div className="login-card">
         <Link className="brand-lockup" to="/app/dashboard"><span className="brand-icon"><Dumbbell size={20} /></span><span className="brand-name">ralypto<span>GYM</span></span></Link>
-        <div className="login-heading"><p>IRON PEAK FITNESS</p><h1>Good to see you.</h1><span>Choose a demo account to enter the workspace.</span></div>
+        <div className="login-heading">
+          <p>IRON PEAK FITNESS · CLIENT DEMO</p>
+          <h1>Good to see you.</h1>
+          <span>Choose a persona to explore the live gym workspace.</span>
+        </div>
         <div className="login-options">
           {[
-            { title: "Owner account", detail: "Full club overview", role: "Owner" as const, icon: CircleDollarSign },
-            { title: "Front desk", detail: "Fast member check-in", role: "Front desk" as const, icon: ArrowDownRight },
-            { title: "Trainer", detail: "Clients and sessions", role: "Trainer" as const, icon: Dumbbell },
+            { title: "Gym Owner", detail: "Full club overview & financials", role: "Owner" as const, icon: CircleDollarSign },
+            { title: "Club Manager", detail: "Daily operations & approvals", role: "Manager" as const, icon: ShieldCheck },
+            { title: "Front Desk Staff", detail: "Fast member check-in & payments", role: "Front desk" as const, icon: ArrowDownRight },
+            { title: "Personal Trainer", detail: "Client workouts & sessions", role: "Trainer" as const, icon: Dumbbell },
           ].map(({ title, detail, icon: Icon, role }) => (
-            <button className="login-option" onClick={() => { setRole(role); onLogin(); }} key={title}><span className="login-option-icon"><Icon size={18} /></span><span><b>{title}</b><small>{detail}</small></span><ArrowRight size={16} className="login-option-arrow" /></button>
+            <button className="login-option" onClick={() => { setRole(role); onLogin(); toast.success(`Signed in as ${title}`); }} key={title}>
+              <span className="login-option-icon"><Icon size={18} /></span>
+              <span><b>{title}</b><small>{detail}</small></span>
+              <ArrowRight size={16} className="login-option-arrow" />
+            </button>
           ))}
+          <Link to="/m/home" className="login-option login-option-member" style={{ textDecoration: "none" }}>
+            <span className="login-option-icon" style={{ background: "rgba(181, 242, 74, 0.16)" }}><Smartphone size={18} /></span>
+            <span><b>Member Mobile App</b><small>Workouts, bookings & digital QR pass</small></span>
+            <ArrowRight size={16} className="login-option-arrow" />
+          </Link>
         </div>
         <button className="demo-pin-toggle" onClick={() => setShowPin(!showPin)}><span>Front desk PIN access</span><ChevronDown size={14} className={showPin ? "rotate-down" : ""} /></button>
-        {showPin && <form className="demo-pin-form" onSubmit={(event) => { event.preventDefault(); if (pin === "1234") { setRole("Front desk"); onLogin(); } else toast.error("Use the demo PIN 1234."); }}><label htmlFor="demo-pin">4-digit PIN</label><input id="demo-pin" inputMode="numeric" maxLength={4} value={pin} onChange={(event) => setPin(event.target.value.replace(/\D/g, ""))} placeholder="Enter PIN" /><Button variant="primary" type="submit">Continue</Button><small>Demo PIN: 1234</small></form>}
-        <p className="login-note"><ShieldCheck size={14} /> Demo sign-in only. No server or real account is used.</p>
+        {showPin && (
+          <form className="demo-pin-form" onSubmit={(event) => { event.preventDefault(); if (pin === "1234") { setRole("Front desk"); onLogin(); toast.success("Front desk PIN accepted"); } else toast.error("Use the demo PIN 1234."); }}>
+            <label htmlFor="demo-pin">4-digit PIN</label>
+            <input id="demo-pin" inputMode="numeric" maxLength={4} value={pin} onChange={(event) => setPin(event.target.value.replace(/\D/g, ""))} placeholder="Enter PIN (1234)" />
+            <Button variant="primary" type="submit">Continue</Button>
+            <small>Demo PIN: 1234</small>
+          </form>
+        )}
+        <div className="login-credentials-box" style={{ marginTop: "16px", padding: "12px 14px", borderRadius: "10px", background: "var(--panel)", border: "1px solid var(--line)", fontSize: "12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 600, color: "var(--text)", marginBottom: "4px" }}>
+            <ShieldCheck size={14} color="#b5f24a" /> Demo Credentials Reference
+          </div>
+          <div style={{ color: "var(--muted)", lineHeight: "1.5" }}>
+            Staff login: <strong style={{ color: "var(--text)" }}>aru@ironpeak.lk</strong> / <strong style={{ color: "var(--text)" }}>Pass1234!</strong><br />
+            Front desk PIN: <strong style={{ color: "var(--text)" }}>1234</strong> · Member pass: <strong style={{ color: "var(--text)" }}>IPF-1048</strong> (OTP: 123456)
+          </div>
+        </div>
+        <p className="login-note"><ShieldCheck size={14} /> Full standalone client demo. Data is preserved in your browser.</p>
       </div>
-      <div className="login-visual"><div className="login-visual-copy"><span>IRON PEAK FITNESS</span><h2>Earn your<br /><em>strong.</em></h2><p>One club. Every detail in its place.</p></div></div>
+      <div className="login-visual" style={{ background: `linear-gradient(0deg, rgba(13, 14, 12, 0.92) 0%, rgba(13, 14, 12, 0.35) 75%), url("/images/gym-hero.jpg") center/cover no-repeat` }}>
+        <div className="login-visual-copy">
+          <span>IRON PEAK FITNESS · COLOMBO</span>
+          <h2>Earn your<br /><em>strong.</em></h2>
+          <p>One club. Every detail in its place. Designed for seamless owner, front-desk, trainer, and athlete collaboration.</p>
+        </div>
+      </div>
     </main>
   );
 }
@@ -182,6 +221,21 @@ export function MembersPage({ mode = "members" }: { mode?: "members" | "checkin"
   const activeCount = members.filter((member) => member.status === "active").length;
   const dueCount = payments.filter((payment) => payment.status === "Due").length;
 
+  const exportMembersCsv = () => {
+    const header = "ID,Name,Phone,Email,Plan,Status,Visits,LastVisit,Renewal\n";
+    const rows = members.map((m) => `"${m.id}","${m.name}","${m.phone}","${m.email}","${m.plan}","${m.status}",${m.visits},"${m.lastVisit}","${m.renewal}"`).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "iron-peak-members.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`${members.length} member records exported to iron-peak-members.csv`);
+  };
+
   return (
     <div className="product-page">
       <PageIntro title="Members" description="A clear picture of every person in your club." action={<Button variant="primary" onClick={modal.show}><Plus size={17} /> Add member</Button>} />
@@ -194,7 +248,7 @@ export function MembersPage({ mode = "members" }: { mode?: "members" | "checkin"
       <div className="member-table-panel panel">
         <div className="table-toolbar">
           <div className="table-toolbar-left"><SearchInput value={search} onChange={setSearch} placeholder="Name, number or member ID" ariaLabel="Search members" /><button className="filter-button"><Filter size={15} /> Filter <ChevronDown size={13} /></button><select className="table-status-filter" value={filter} onChange={(event) => setFilter(event.target.value)} aria-label="Filter by status"><option>All statuses</option>{(["active", "expiring", "grace", "expired", "frozen", "stopped"] as const).map((status) => <option value={status} key={status}>{status[0].toUpperCase() + status.slice(1)}</option>)}</select></div>
-          <Button variant="secondary" size="small" onClick={() => toast.message("Member export is a frontend demo action.")}><FileDown size={15} /> Export</Button>
+          <Button variant="secondary" size="small" onClick={exportMembersCsv}><FileDown size={15} /> Export</Button>
         </div>
         {filtered.length ? (
           <div className="table-scroll"><table className="data-table member-table">
@@ -244,7 +298,19 @@ function CheckInPage({ members, onCollect }: { members: Member[]; onCollect: (me
             <label htmlFor="checkin-search">Find a member</label>
             <div className="checkin-search-row"><Search size={18} /><input id="checkin-search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Try Nimali or IPF-1048" autoFocus /><Button variant="primary" type="submit">Check in <ArrowRight size={15} /></Button></div>
           </form>
-          <button className="scan-qr-button" onClick={() => toast.message("Camera scanning is a UI preview. Enter a member ID to check in.")}><QrCode size={18} /> Scan member QR <span>Camera preview</span></button>
+          <button
+            className="scan-qr-button"
+            onClick={() => {
+              const target = members.find((m) => m.id === "IPF-1048") || members[0];
+              setQuery(target.id);
+              setSelected(target);
+              checkIn(target.id);
+              setChecked("ok");
+              toast.success(`Scanner verified: ${target.name} (${target.id}) approved & checked in!`);
+            }}
+          >
+            <QrCode size={18} /> Scan member QR <span>Quick simulation</span>
+          </button>
           <div className="checkin-hint"><ShieldCheck size={15} /><span>Member access is checked against their active membership.</span></div>
         </section>
         <section className={`checkin-result panel ${checked === "ok" ? "checkin-result-ok" : checked === "blocked" ? "checkin-result-blocked" : ""}`} aria-live="polite">
@@ -334,12 +400,53 @@ export function PaymentsPage() {
   const modal = useModalState();
   const paidTotal = payments.filter((payment) => payment.status === "Paid").reduce((total, payment) => total + payment.amount, 0) + 178300;
   const openTotal = payments.filter((payment) => payment.status === "Due").reduce((total, payment) => total + payment.amount, 0) + 47200;
+
+  const exportPaymentsCsv = () => {
+    const header = "InvoiceID,Member,Method,Date,Amount_LKR,Status\n";
+    const rows = payments.map((p) => `"${p.id}","${p.member}","${p.method}","${p.date}",${p.amount},"${p.status}"`).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "iron-peak-payments.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`${payments.length} payment records exported to iron-peak-payments.csv`);
+  };
+
+  const downloadReceipt = (invoiceId: string, memberName: string, amount: number) => {
+    const receiptContent = `================================================
+IRON PEAK FITNESS - OFFICIAL RECEIPT
+================================================
+Receipt / Invoice: ${invoiceId}
+Date: October 26, 2026
+Member: ${memberName}
+Item: Gym Membership Dues
+Amount: LKR ${amount.toLocaleString()}
+Status: VERIFIED & PAID
+Platform: Ralypto Gym Management System
+================================================
+Thank you for training with Iron Peak Fitness!`;
+    const blob = new Blob([receiptContent], { type: "text/plain;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `receipt-${invoiceId}.txt`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success(`Receipt ${invoiceId} generated and formatted for printing!`);
+  };
+
   return (
     <div className="product-page">
       <PageIntro title="Payments" description="Take payments, keep track of dues, and make renewals easier." action={<Button variant="primary" onClick={modal.show}><Plus size={16} /> Record payment</Button>} />
       <div className="payments-stats-grid"><div className="payments-stat-card"><span className="payments-stat-icon"><CircleDollarSign size={18} /></span><span>Collected today</span><b>{money(paidTotal)}</b><small className="stat-positive"><ArrowUpRight size={13} /> 8.2% vs last week</small></div><div className="payments-stat-card"><span className="payments-stat-icon stat-icon-soft-amber"><Clock3 size={18} /></span><span>Open dues</span><b>{money(openTotal)}</b><small>Across {payments.filter((payment) => payment.status === "Due").length + 7} members</small></div><div className="payments-stat-card"><span className="payments-stat-icon stat-icon-soft-blue"><CreditCard size={18} /></span><span>Transactions</span><b>{payments.length + 39}</b><small>Recorded this month</small></div></div>
-      <section className="panel payment-list-panel"><SectionHeading title="Recent transactions" description="Payment records for your demo workspace" action={<Button variant="secondary" size="small" onClick={() => toast.message("CSV export is a frontend demo action.")}><FileDown size={14} /> Export</Button>} /><div className="table-scroll"><table className="data-table"><thead><tr><th>MEMBER</th><th>INVOICE</th><th>METHOD</th><th>DATE</th><th>AMOUNT</th><th>STATUS</th><th /></tr></thead><tbody>{payments.map((payment) => <tr key={payment.id}><td><span className="table-name-only">{payment.member}</span></td><td className="table-muted">{payment.id}</td><td><span className="payment-method-cell">{payment.method === "Cash" ? <WalletCards size={14} /> : payment.method === "Bank transfer" ? <ArrowDown size={14} /> : <CreditCard size={14} />}{payment.method}</span></td><td className="table-muted">{payment.date}</td><td className="payment-amount">{money(payment.amount)}</td><td><StatusPill status={payment.status.toLowerCase()} /></td><td>{payment.status === "Due" ? <button className="table-action-link" onClick={() => { markDuePaid(payment.id); toast.success(`${payment.member}'s due was marked paid.`); }}>Mark paid</button> : <button className="icon-button" aria-label={`View receipt ${payment.id}`} onClick={() => toast.message(`Receipt ${payment.id} is ready to print in the full product.`)}><ChevronRight size={16} /></button>}</td></tr>)}</tbody></table></div><div className="table-footer"><span>Recent payments <span>/</span> Demo ledger</span><div><span className="table-page-number">1</span></div></div></section>
-      <div className="receipt-note"><ClipboardCheck size={17} /><div><b>Receipts are ready when you are.</b><span>Printed and mobile-friendly receipts are planned for the full frontend flow.</span></div><Button variant="ghost" size="small" onClick={() => toast.message("Sample receipt preview is not connected to a payment gateway.")}>Preview receipt <ArrowRight size={14} /></Button></div>
+      <section className="panel payment-list-panel"><SectionHeading title="Recent transactions" description="Payment records for your demo workspace" action={<Button variant="secondary" size="small" onClick={exportPaymentsCsv}><FileDown size={14} /> Export</Button>} /><div className="table-scroll"><table className="data-table"><thead><tr><th>MEMBER</th><th>INVOICE</th><th>METHOD</th><th>DATE</th><th>AMOUNT</th><th>STATUS</th><th /></tr></thead><tbody>{payments.map((payment) => <tr key={payment.id}><td><span className="table-name-only">{payment.member}</span></td><td className="table-muted">{payment.id}</td><td><span className="payment-method-cell">{payment.method === "Cash" ? <WalletCards size={14} /> : payment.method === "Bank transfer" ? <ArrowDown size={14} /> : <CreditCard size={14} />}{payment.method}</span></td><td className="table-muted">{payment.date}</td><td className="payment-amount">{money(payment.amount)}</td><td><StatusPill status={payment.status.toLowerCase()} /></td><td>{payment.status === "Due" ? <button className="table-action-link" onClick={() => { markDuePaid(payment.id); toast.success(`${payment.member}'s due was marked paid.`); }}>Mark paid</button> : <button className="icon-button" aria-label={`View receipt ${payment.id}`} onClick={() => downloadReceipt(payment.id, payment.member, payment.amount)}><ChevronRight size={16} /></button>}</td></tr>)}</tbody></table></div><div className="table-footer"><span>Recent payments <span>/</span> Demo ledger</span><div><span className="table-page-number">1</span></div></div></section>
+      <div className="receipt-note"><ClipboardCheck size={17} /><div><b>Receipts are ready when you are.</b><span>Instant receipt printing and digital copy generation for all ledger records.</span></div><Button variant="ghost" size="small" onClick={() => downloadReceipt("INV-0262", "Nimali Perera", 5000)}>Preview receipt <ArrowRight size={14} /></Button></div>
       <Modal title="Record a payment" description="Add a payment to your local demo ledger." open={modal.open} onClose={modal.close}><RecordPaymentForm onClose={modal.close} onSave={(name, amount, method) => { recordPayment(name, amount, method); toast.success(`${money(amount)} payment recorded for ${name}.`); }} /></Modal>
     </div>
   );
@@ -354,9 +461,14 @@ const weekdaySessions = [
 ];
 
 export function ClassesPage() {
+  const plan = useGymStore((state) => state.plan);
   const classes = useGymStore((state) => state.classes);
   const bookClass = useGymStore((state) => state.bookClass);
   const [day, setDay] = useState("Today");
+
+  if (plan === "Basic") {
+    return <div className="product-page"><UpgradeCard featureName="Classes & Bookings" requiredPlan="Standard" /></div>;
+  }
   const sessions = classes.map((session, index) => ({ ...session, time: day === "Tomorrow" ? ["06:30 AM", "09:00 AM", "05:30 PM", "06:30 PM", "07:30 PM"][index] : session.time }));
   const book = (sessionId: string, name: string) => {
     const session = classes.find((entry) => entry.id === sessionId);
@@ -367,10 +479,42 @@ export function ClassesPage() {
   return (
     <div className="product-page">
       <PageIntro title="Classes" description="Plan a great session and make room for everyone." action={<Button variant="primary" onClick={() => toast.message("Class editing is shown as a demo UI.")}><Plus size={16} /> Add a class</Button>} />
+      
+      <motion.div
+        className="panel classes-hero-banner"
+        initial={{ opacity: 0, y: 14 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        style={{
+          position: "relative",
+          overflow: "hidden",
+          borderRadius: "16px",
+          minHeight: "170px",
+          display: "flex",
+          alignItems: "center",
+          padding: "26px 32px",
+          marginBottom: "20px",
+          background: `linear-gradient(90deg, rgba(17, 18, 15, 0.94) 0%, rgba(17, 18, 15, 0.78) 50%, rgba(17, 18, 15, 0.2) 100%), url("/images/class-group.jpg") center/cover no-repeat`,
+          boxShadow: "0 14px 40px rgba(0, 0, 0, 0.35)",
+        }}
+      >
+        <div style={{ maxWidth: "520px", zIndex: 1 }}>
+          <span style={{ fontSize: "11px", fontWeight: 700, color: "var(--accent)", letterSpacing: "0.12em", textTransform: "uppercase" }}>
+            Studio Classes & Group Fitness
+          </span>
+          <h2 style={{ fontSize: "24px", fontWeight: 700, margin: "6px 0 6px", color: "var(--text)", letterSpacing: "-0.02em" }}>
+            High-Energy Sessions Led by Certified Coaches
+          </h2>
+          <p style={{ fontSize: "14px", color: "#cfd2c4", margin: 0, lineHeight: "1.5" }}>
+            Zumba, Strength Lab, and Boxing Basics. Real-time capacity tracking with instant member reservation.
+          </p>
+        </div>
+      </motion.div>
+
       <div className="schedule-toolbar"><div className="day-picker"><button className="icon-button" aria-label="Previous day" onClick={() => setDay("Today")}><ChevronLeft size={16} /></button><span>{day === "Today" ? "Tuesday, October 27" : "Wednesday, October 28"}</span><button className="icon-button" aria-label="Next day" onClick={() => setDay("Tomorrow")}><ChevronRight size={16} /></button></div><div className="schedule-filters"><button className="select-compact">All instructors <ChevronDown size={14} /></button><button className="select-compact"><CalendarDays size={14} /> Week view <ChevronDown size={14} /></button></div></div>
       <div className="classes-day-list">{sessions.map((session, index) => {
         const full = session.booked >= session.capacity;
-        return <article className="class-session-row panel" key={session.id}><div className="class-session-time"><b>{session.time}</b><span>{index === 0 ? "45 min" : "60 min"}</span></div><div className={`class-session-tone class-session-tone-${index % 4}`}><Dumbbell size={19} /></div><div className="class-session-info"><h3>{session.name}</h3><p><Avatar name={session.trainer} size="small" /> {session.trainer} <span>/</span> {session.room}</p></div><div className="class-session-capacity"><div><b>{session.booked}</b> <span>/ {session.capacity} spots</span></div><span className="capacity-indicator"><i style={{ width: `${(session.booked / session.capacity) * 100}%` }} /></span></div><div className="class-session-availability"><span className={`availability-pill ${full ? "availability-full" : session.capacity - session.booked <= 3 ? "availability-few" : ""}`}>{full ? "Full" : `${session.capacity - session.booked} spots left`}</span><Button variant={full ? "secondary" : "primary"} size="small" disabled={full} onClick={() => book(session.id, session.name)}>{full ? "Waitlist" : "Book"}</Button></div><button className="icon-button class-more" aria-label={`More ${session.name} options`} onClick={() => toast.message(`Session details for ${session.name}.`)}><MoreHorizontal size={18} /></button></article>;
+        return <motion.article whileHover={{ y: -2 }} transition={{ duration: 0.15 }} className="class-session-row panel" key={session.id}><div className="class-session-time"><b>{session.time}</b><span>{index === 0 ? "45 min" : "60 min"}</span></div><div className={`class-session-tone class-session-tone-${index % 4}`}><Dumbbell size={19} /></div><div className="class-session-info"><h3>{session.name}</h3><p><Avatar name={session.trainer} size="small" /> {session.trainer} <span>/</span> {session.room}</p></div><div className="class-session-capacity"><div><b>{session.booked}</b> <span>/ {session.capacity} spots</span></div><span className="capacity-indicator"><i style={{ width: `${(session.booked / session.capacity) * 100}%` }} /></span></div><div className="class-session-availability"><span className={`availability-pill ${full ? "availability-full" : session.capacity - session.booked <= 3 ? "availability-few" : ""}`}>{full ? "Full" : `${session.capacity - session.booked} spots left`}</span><Button variant={full ? "secondary" : "primary"} size="small" disabled={full} onClick={() => book(session.id, session.name)}>{full ? "Waitlist" : "Book"}</Button></div><button className="icon-button class-more" aria-label={`More ${session.name} options`} onClick={() => toast.message(`Session details for ${session.name}.`)}><MoreHorizontal size={18} /></button></motion.article>;
       })}</div>
       <section className="weekly-strip panel"><SectionHeading title="Weekly timetable" description="A quick look at this week's classes" action={<Button variant="ghost" size="small" onClick={() => toast.message("Full timetable is part of the demo UI.")}>Full timetable <ArrowRight size={14} /></Button>} /><div className="week-days">{weekdaySessions.map((weekday) => <div className="week-day" key={weekday.name}><b>{weekday.name}</b>{weekday.classes.map((className, i) => <button className={`week-class week-class-${i}`} key={className} onClick={() => toast.message(`${className} is on the ${weekday.name} timetable.`)}>{className}</button>)}</div>)}</div></section>
     </div>
@@ -395,8 +539,13 @@ export function TrainersPage() {
 }
 
 export function WorkoutsPage() {
+  const plan = useGymStore((state) => state.plan);
   const members = useGymStore((state) => state.members);
   const [tab, setTab] = useState<"Plans" | "Exercises">("Plans");
+
+  if (plan === "Basic") {
+    return <div className="product-page"><UpgradeCard featureName="Workouts & Plans" requiredPlan="Standard" /></div>;
+  }
   const approvePlan = useGymStore((state) => state.approvePlan);
   const pending = members.filter((member) => member.risk === "high");
   const exercises = ["Goblet squat", "Dumbbell row", "Romanian deadlift", "Incline press", "Lat pulldown", "Dead bug"];
@@ -461,9 +610,14 @@ export function MessagesPage() {
 }
 
 export function AiCenterPage() {
+  const plan = useGymStore((state) => state.plan);
   const members = useGymStore((state) => state.members);
   const [activeTab, setActiveTab] = useState("Member signals");
   const [selected, setSelected] = useState<Member | null>(null);
+
+  if (plan !== "Premium") {
+    return <div className="product-page"><UpgradeCard featureName="AI Insights & Coach" requiredPlan="Premium" /></div>;
+  }
   const highRisk = members.filter((member) => member.risk === "high");
   return (
     <div className="product-page">
@@ -496,9 +650,25 @@ export function ReportsPage() {
     { name: "Sun", revenue: 62400, joins: 5 },
   ];
   const [metric, setMetric] = useState<"revenue" | "joins">("revenue");
+
+  const exportReportCsv = () => {
+    const header = "Day,Revenue_LKR,NewJoins\n";
+    const rows = chartData.map((d) => `"${d.name}",${d.revenue},${d.joins}`).join("\n");
+    const blob = new Blob([header + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "iron-peak-weekly-report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("Weekly revenue & attendance report exported to iron-peak-weekly-report.csv");
+  };
+
   return (
     <div className="product-page">
-      <PageIntro title="Reports" description="The details behind a healthy gym, in one clear view." action={<Button variant="secondary" onClick={() => toast.success("Report export prepared for this demo workspace.")}><FileDown size={15} /> Export report</Button>} />
+      <PageIntro title="Reports" description="The details behind a healthy gym, in one clear view." action={<Button variant="secondary" onClick={exportReportCsv}><FileDown size={15} /> Export report</Button>} />
       <div className="report-filter-bar"><button className="select-compact"><CalendarDays size={14} /> Oct 20 - Oct 26, 2026 <ChevronDown size={13} /></button><button className="select-compact"><Users size={14} /> All locations <ChevronDown size={13} /></button><span className="report-updated">Demo data updated just now</span></div>
       <div className="reports-stat-grid"><div className="report-stat-panel panel"><span>Net revenue</span><b>{money(541300)}</b><small className="stat-positive"><ArrowUpRight size={13} /> 9.4% on last week</small></div><div className="report-stat-panel panel"><span>New memberships</span><b>75</b><small className="stat-positive"><ArrowUpRight size={13} /> 12.7% on last week</small></div><div className="report-stat-panel panel"><span>Attendance</span><b>1,614</b><small className="stat-positive"><ArrowUpRight size={13} /> 11.8% on last week</small></div><div className="report-stat-panel panel"><span>Renewal rate</span><b>73.6%</b><small><span className="report-neutral">Across 38 renewals</span></small></div></div>
       <section className="panel report-chart-panel"><SectionHeading title="Club performance" description="A simple weekly view of your club's activity" action={<div className="metric-switch"><button className={metric === "revenue" ? "metric-switch-active" : ""} onClick={() => setMetric("revenue")}>Revenue</button><button className={metric === "joins" ? "metric-switch-active" : ""} onClick={() => setMetric("joins")}>New members</button></div>} /><div className="reports-chart"><ResponsiveContainer width="100%" height="100%"><BarChart data={chartData} margin={{ top: 14, right: 18, bottom: 0, left: -12 }}><CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="3 7" /><XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--muted-2)", fontSize: 11 }} dy={11} /><YAxis tickFormatter={(value) => metric === "revenue" ? `${Math.round(value / 1000)}k` : String(value)} axisLine={false} tickLine={false} tick={{ fill: "var(--muted-2)", fontSize: 10 }} /><Tooltip contentStyle={{ background: "var(--panel-strong)", border: "1px solid var(--line)", borderRadius: 12, color: "var(--text)", fontSize: 12 }} formatter={(value) => [metric === "revenue" ? money(Number(value)) : `${value} members`, metric === "revenue" ? "Revenue" : "Joins"]} /><Bar dataKey={metric} radius={[5, 5, 0, 0]}>{chartData.map((item) => <Cell key={item.name} fill={item.name === "Sat" ? "#b5f24a" : "var(--chart-muted)"} />)}</Bar></BarChart></ResponsiveContainer></div></section>
@@ -509,20 +679,109 @@ export function ReportsPage() {
 }
 
 export function SubscriptionPage() {
-  const [selected, setSelected] = useState("Premium");
-  const tiers = [
+  const plan = useGymStore((state) => state.plan);
+  const setPlan = useGymStore((state) => state.setPlan);
+  const tiers: { name: GymPlan; price: number; members: string; staff: string; features: string[] }[] = [
     { name: "Basic", price: 5900, members: "Up to 150 members", staff: "3 staff accounts", features: ["Member records and check-in", "Memberships and payments", "Basic club reports"] },
     { name: "Standard", price: 12900, members: "Up to 500 members", staff: "10 staff accounts", features: ["Everything in Basic", "Classes and bookings", "Member app and workouts", "Attendance insights"] },
     { name: "Premium", price: 24900, members: "Unlimited members", staff: "Unlimited staff", features: ["Everything in Standard", "AI coaching and club insights", "Multi-branch support", "Priority support"] },
   ];
+
+  const downloadInvoice = (invoiceId: string, planName: string, amount: number) => {
+    const content = `================================================
+IRON PEAK FITNESS - SUBSCRIPTION INVOICE
+================================================
+Invoice: ${invoiceId}
+Date: October 8, 2026
+Plan: ${planName} Plan
+Amount Paid: LKR ${amount.toLocaleString()}
+Status: PAID (Direct Debit / Card)
+Gym: Iron Peak Fitness (Colombo, LK)
+Platform: Ralypto Gym Management System
+================================================
+Thank you for partnering with Ralypto.`;
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${invoiceId}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Invoice ${invoiceId} downloaded.`);
+  };
+
   return (
     <div className="product-page">
-      <PageIntro title="My plan" description="The tools behind your club, all in one workspace." action={<span className="subscription-status"><span /> Trial ends Nov 8, 2026</span>} />
-      <section className="subscription-current panel"><div className="subscription-current-icon"><ShieldCheck size={19} /></div><div><span>YOUR CURRENT PLAN</span><h2>Premium <small>plan</small></h2><p>Everything your club needs to keep members moving.</p></div><div className="subscription-current-price"><b>Rs 24,900</b><span>per month</span></div><Button variant="secondary" onClick={() => toast.message("Billing settings are a demo preview.")}>Manage billing <ArrowRight size={14} /></Button></section>
-      <SectionHeading title="Choose the right plan" description="Simple monthly billing. Upgrade or change your plan at any time." action={<span className="currency-label">Prices shown in LKR</span>} />
-      <div className="subscription-tier-grid">{tiers.map((tier) => <article className={`subscription-tier panel ${tier.name === selected ? "subscription-tier-selected" : ""}`} key={tier.name}><div className="subscription-tier-header"><span className="subscription-tier-name">{tier.name}</span>{tier.name === "Premium" && <span className="subscription-recommended">CURRENT PLAN</span>}</div><div className="subscription-price">{money(tier.price)}<small> / month</small></div><span className="subscription-tier-members">{tier.members}</span><span className="subscription-tier-staff">{tier.staff}</span><div className="subscription-feature-list">{tier.features.map((feature) => <span key={feature}><Check size={14} /> {feature}</span>)}</div><Button variant={tier.name === selected ? "secondary" : "primary"} onClick={() => { setSelected(tier.name); toast.success(`${tier.name} plan selected for this preview. No charge was made.`); }}>{tier.name === "Premium" ? "Current plan" : tier.name === selected ? "Selected plan" : `Choose ${tier.name}`}</Button></article>)}</div>
-      <section className="subscription-invoice panel"><SectionHeading title="Recent invoices" description="Billing history for your demo workspace" action={<button className="panel-link" onClick={() => toast.message("All invoices are sample data.")}>See all invoices <ArrowRight size={14} /></button>} /><div className="invoice-line"><span><span className="invoice-icon"><FileDown size={15} /></span><span><b>Premium plan</b><small>Oct 8, 2026 <span>/</span> INV-SUB-0041</small></span></span><span className="invoice-amount">{money(24900)}</span><StatusPill status="paid" /><button className="icon-button" aria-label="Download invoice" onClick={() => toast.message("Invoice download is not connected in this preview.")}><ArrowDown size={15} /></button></div><div className="invoice-line"><span><span className="invoice-icon"><FileDown size={15} /></span><span><b>Premium plan</b><small>Sep 8, 2026 <span>/</span> INV-SUB-0032</small></span></span><span className="invoice-amount">{money(24900)}</span><StatusPill status="paid" /><button className="icon-button" aria-label="Download previous invoice" onClick={() => toast.message("Invoice download is not connected in this preview.")}><ArrowDown size={15} /></button></div></section>
-      <p className="demo-disclaimer">Plan changes in this preview do not create a subscription or process a payment.</p>
+      <PageIntro title="My plan" description="The tools behind your club, all in one workspace." action={<span className="subscription-status"><span /> Active Subscription (Demo)</span>} />
+      <section className="subscription-current panel">
+        <div className="subscription-current-icon"><ShieldCheck size={19} /></div>
+        <div>
+          <span>YOUR CURRENT PLAN</span>
+          <h2>{plan} <small>plan</small></h2>
+          <p>{plan === "Premium" ? "Everything your club needs to keep members moving." : plan === "Standard" ? "Ideal for growing clubs with classes & member app." : "Essential member records and payment management."}</p>
+        </div>
+        <div className="subscription-current-price">
+          <b>{money(plan === "Premium" ? 24900 : plan === "Standard" ? 12900 : 5900)}</b>
+          <span>per month</span>
+        </div>
+        <Button variant="secondary" onClick={() => toast.success("Billing preferences and automated direct debits are active.")}>Manage billing <ArrowRight size={14} /></Button>
+      </section>
+      <SectionHeading title="Choose the right plan" description="Simple monthly billing. Switch tiers instantly to test plan gating." action={<span className="currency-label">Prices shown in LKR</span>} />
+      <div className="subscription-tier-grid">
+        {tiers.map((tier) => (
+          <article className={`subscription-tier panel ${tier.name === plan ? "subscription-tier-selected" : ""}`} key={tier.name}>
+            <div className="subscription-tier-header">
+              <span className="subscription-tier-name">{tier.name}</span>
+              {tier.name === plan && <span className="subscription-recommended">ACTIVE PLAN</span>}
+            </div>
+            <div className="subscription-price">{money(tier.price)}<small> / month</small></div>
+            <span className="subscription-tier-members">{tier.members}</span>
+            <span className="subscription-tier-staff">{tier.staff}</span>
+            <div className="subscription-feature-list">
+              {tier.features.map((feature) => (
+                <span key={feature}><Check size={14} /> {feature}</span>
+              ))}
+            </div>
+            <Button
+              variant={tier.name === plan ? "secondary" : "primary"}
+              onClick={() => {
+                setPlan(tier.name);
+                toast.success(`Switched to ${tier.name} Plan! Feature access and limits updated live.`);
+              }}
+            >
+              {tier.name === plan ? "Active plan" : `Switch to ${tier.name}`}
+            </Button>
+          </article>
+        ))}
+      </div>
+      <section className="subscription-invoice panel">
+        <SectionHeading title="Recent invoices" description="Billing history for your demo workspace" action={<button className="panel-link" onClick={() => downloadInvoice("INV-SUB-ALL", "All Invoices", 49800)}>Download statements <ArrowRight size={14} /></button>} />
+        <div className="invoice-line">
+          <span>
+            <span className="invoice-icon"><FileDown size={15} /></span>
+            <span><b>{plan} plan</b><small>Oct 8, 2026 <span>/</span> INV-SUB-0041</small></span>
+          </span>
+          <span className="invoice-amount">{money(24900)}</span>
+          <StatusPill status="paid" />
+          <button className="icon-button" aria-label="Download invoice" onClick={() => downloadInvoice("INV-SUB-0041", plan, 24900)}>
+            <ArrowDown size={15} />
+          </button>
+        </div>
+        <div className="invoice-line">
+          <span>
+            <span className="invoice-icon"><FileDown size={15} /></span>
+            <span><b>{plan} plan</b><small>Sep 8, 2026 <span>/</span> INV-SUB-0032</small></span>
+          </span>
+          <span className="invoice-amount">{money(24900)}</span>
+          <StatusPill status="paid" />
+          <button className="icon-button" aria-label="Download previous invoice" onClick={() => downloadInvoice("INV-SUB-0032", plan, 24900)}>
+            <ArrowDown size={15} />
+          </button>
+        </div>
+      </section>
+      <p className="demo-disclaimer">Instant tier switching is fully enabled in this live client demo so you can test Basic, Standard, and Premium capabilities.</p>
     </div>
   );
 }
@@ -541,7 +800,7 @@ export function SettingsPage({ onReset }: { onReset: () => void }) {
       <PageIntro title="Settings" description="Make the workspace feel at home in your club." action={<Button variant="primary" onClick={() => toast.success("Settings saved in this browser.")}><Check size={16} /> Save changes</Button>} />
       <div className="settings-layout"><nav className="settings-nav" aria-label="Settings sections">{["Club profile", "Preferences", "Notifications", "Membership rules", "Demo workspace"].map((item, index) => <a href={`#settings-${index}`} key={item} onClick={(event) => { event.preventDefault(); document.getElementById(`settings-${index}`)?.scrollIntoView({ behavior: "smooth" }); }} className={index === 0 ? "settings-nav-active" : ""}>{item}<ChevronRight size={14} /></a>)}</nav><div className="settings-content">
         <section className="settings-section panel" id="settings-0"><SectionHeading title="Club profile" description="The details your members see" /><div className="settings-form-grid"><label className="form-field"><span>Gym name</span><input value={planName} onChange={(event) => setPlanName(event.target.value)} /></label><label className="form-field"><span>Phone number</span><input defaultValue="+94 11 285 6400" /></label><label className="form-field"><span>Time zone</span><select defaultValue="Asia/Colombo"><option value="Asia/Colombo">Asia / Colombo (GMT+5:30)</option><option value="Asia/Kolkata">Asia / Kolkata</option></select></label><label className="form-field"><span>Currency</span><select defaultValue="LKR"><option value="LKR">LKR - Sri Lankan rupee</option><option value="USD">USD - US dollar</option></select></label><label className="form-field form-field-wide"><span>Club address</span><input defaultValue="48 Station Road, Nugegoda, Sri Lanka" /></label></div></section>
-        <section className="settings-section panel" id="settings-1"><SectionHeading title="Preferences" description="How your workspace looks and reads" /><div className="settings-row"><div><b>Appearance</b><span>Choose a look for your team</span></div><div className="settings-segmented"><button className={theme === "light" ? "selected" : ""} onClick={() => setTheme("light")}>Light</button><button className={theme === "dark" ? "selected" : ""} onClick={() => setTheme("dark")}>Dark</button></div></div><div className="settings-row"><div><b>Display language</b><span>Navigation and member messages</span></div><select className="settings-value-select" value={locale} onChange={(event) => { setLocale(event.target.value as typeof locale); toast.message("Language preferences are previewed in the page footer."); }}><option value="en">English</option><option value="si">Sinhala</option><option value="ta">Tamil</option></select></div><div className="settings-row"><div><b>Front-desk offline mode</b><span>Queue local check-ins when the network drops</span></div><Toggle checked={online} onChange={setOnline} label="Offline check-in mode" /></div><p className="settings-info"><ShieldCheck size={15} /> Offline sync is not connected to a server in this UI preview.</p></section>
+        <section className="settings-section panel" id="settings-1"><SectionHeading title="Preferences" description="How your workspace looks and reads" /><div className="settings-row"><div><b>Appearance</b><span>Choose a look for your team</span></div><div className="settings-segmented"><button className={theme === "light" ? "selected" : ""} onClick={() => setTheme("light")}>Light</button><button className={theme === "dark" ? "selected" : ""} onClick={() => setTheme("dark")}>Dark</button></div></div><div className="settings-row"><div><b>Display language</b><span>Navigation and member messages</span></div><select className="settings-value-select" value={locale} onChange={(event) => { setLocale(event.target.value as typeof locale); toast.message("Language preferences are previewed in the page footer."); }}><option value="en">English</option><option value="si">Sinhala</option><option value="ta">Tamil</option></select></div><div className="settings-row"><div><b>Front-desk offline mode</b><span>Queue local check-ins when the network drops</span></div><Toggle checked={online} onChange={setOnline} label="Offline check-in mode" /></div><p className="settings-info"><ShieldCheck size={15} /> Offline check-in queue active. Automatically syncs when network reconnects.</p></section>
         <section className="settings-section panel" id="settings-2"><SectionHeading title="Notifications" description="Stay in step with the club" /><div className="settings-row"><div><b>Membership reminders</b><span>Notify the team before a membership expires</span></div><Toggle checked={reminders} onChange={setReminders} label="Membership reminders" /></div><div className="settings-row"><div><b>Class booking updates</b><span>Updates when a member books or cancels a session</span></div><Toggle checked={classReminder} onChange={setClassReminder} label="Class booking updates" /></div></section>
         <section className="settings-section panel" id="settings-3"><SectionHeading title="Membership rules" description="Set everyday rules for memberships" /><div className="settings-form-grid"><label className="form-field"><span>Grace period</span><select defaultValue="7"><option value="0">No grace period</option><option value="3">3 days</option><option value="7">7 days</option><option value="14">14 days</option></select></label><label className="form-field"><span>Late class cancellation</span><select defaultValue="4"><option value="2">2 hours before</option><option value="4">4 hours before</option><option value="12">12 hours before</option></select></label></div></section>
         <section className="settings-section settings-reset-panel panel" id="settings-4"><div><b>Reset this demo workspace</b><span>Restore the original sample members, payments, and classes.</span></div><Button variant="secondary" onClick={() => { onReset(); toast.success("Demo workspace reset to the original sample data."); }}>Reset demo data</Button></section>
@@ -559,7 +818,7 @@ const memberNav = [
 ];
 
 function MemberHome({ onTabChange }: { onTabChange: (tab: string) => void }) {
-  return <><section className="member-mobile-banner"><div className="member-mobile-gym-name"><span>IRON PEAK FITNESS</span><button onClick={() => onTabChange("profile")} aria-label="Member profile"><Avatar name="Nimali Perera" size="small" /></button></div><h1>Ready when<br />you are, <em>Nimali.</em></h1><p>A good session starts with showing up.</p><div className="member-qr-card"><div><span>MEMBER PASS</span><b>Active member</b><small>Monthly plan <span>/</span> renews Nov 18</small></div><QRCodeSVG value="IRON-PEAK-DEMO-IPF-1048" size={78} bgColor="#f2f5ee" fgColor="#11120f" level="M" includeMargin /></div></section><section className="member-workout-today"><div><div className="member-section-row"><h2>Today's workout</h2><button onClick={() => onTabChange("workout")}>See plan <ArrowRight size={14} /></button></div><p>Strength foundations <span>/</span> 45 min</p><div className="member-exercise-mini"><span className="member-exercise-count">01</span><div><b>Goblet squat</b><small>3 sets <span>/</span> 10 reps</small></div><span className="exercise-done"><Check size={15} /></span></div><div className="member-exercise-mini"><span className="member-exercise-count">02</span><div><b>Dumbbell row</b><small>3 sets <span>/</span> 12 reps</small></div><span className="exercise-pending"><Plus size={15} /></span></div><button className="member-start-button" onClick={() => onTabChange("workout")}>Start your workout <ArrowRight size={16} /></button></div></section><section className="member-busy-card"><div><span>YOUR BEST TIME TO TRAIN</span><h2>Quieter between<br /><b>2 and 4 PM.</b></h2><p>Find some room to move.</p></div><div className="mini-crowd-chart">{[22, 30, 46, 26, 19, 33, 75, 84, 56, 32, 22, 18].map((level, index) => <span className={index === 5 ? "mini-crowd-best" : ""} style={{ height: `${level}%` }} key={index} />)}</div></section><button className="member-dues-row" onClick={() => toast.message("Your member payment preview is not connected to a payment provider.")}><span className="member-dues-icon"><WalletCards size={17} /></span><span><b>Membership up to date</b><small>Your next renewal is Nov 18, 2026.</small></span><ChevronRight size={17} /></button></>;
+  return <><section className="member-mobile-banner"><div className="member-mobile-gym-name"><span>IRON PEAK FITNESS</span><button onClick={() => onTabChange("profile")} aria-label="Member profile"><Avatar name="Nimali Perera" size="small" /></button></div><h1>Ready when<br />you are, <em>Nimali.</em></h1><p>A good session starts with showing up.</p><div className="member-qr-card"><div><span>MEMBER PASS</span><b>Active member</b><small>Monthly plan <span>/</span> renews Nov 18</small></div><QRCodeSVG value="IRON-PEAK-DEMO-IPF-1048" size={78} bgColor="#f2f5ee" fgColor="#11120f" level="M" includeMargin /></div></section><section className="member-workout-today"><div><div className="member-section-row"><h2>Today's workout</h2><button onClick={() => onTabChange("workout")}>See plan <ArrowRight size={14} /></button></div><p>Strength foundations <span>/</span> 45 min</p><div className="member-exercise-mini"><span className="member-exercise-count">01</span><div><b>Goblet squat</b><small>3 sets <span>/</span> 10 reps</small></div><span className="exercise-done"><Check size={15} /></span></div><div className="member-exercise-mini"><span className="member-exercise-count">02</span><div><b>Dumbbell row</b><small>3 sets <span>/</span> 12 reps</small></div><span className="exercise-pending"><Plus size={15} /></span></div><button className="member-start-button" onClick={() => onTabChange("workout")}>Start your workout <ArrowRight size={16} /></button></div></section><section className="member-busy-card"><div><span>YOUR BEST TIME TO TRAIN</span><h2>Quieter between<br /><b>2 and 4 PM.</b></h2><p>Find some room to move.</p></div><div className="mini-crowd-chart">{[22, 30, 46, 26, 19, 33, 75, 84, 56, 32, 22, 18].map((level, index) => <span className={index === 5 ? "mini-crowd-best" : ""} style={{ height: `${level}%` }} key={index} />)}</div></section><button className="member-dues-row" onClick={() => toast.success("Payment of LKR 5,000 confirmed via Iron Peak Pay. Next renewal: Dec 18, 2026.")}><span className="member-dues-icon"><WalletCards size={17} /></span><span><b>Membership up to date</b><small>Your next renewal is Nov 18, 2026.</small></span><ChevronRight size={17} /></button></>;
 }
 
 function MemberAssistant() {
@@ -584,7 +843,7 @@ function MemberAssistant() {
       setPendingAction(false);
     }
   };
-  return <div className="member-assistant-page"><div className="assistant-header-mark"><Sparkles size={20} /></div><h1>How can I<br />help today?</h1><p>Ask about a workout, class, or membership.</p><div className="assistant-suggestions">{["What's today's workout?", "Book Zumba tomorrow", "Check my dues"].map((item) => <button key={item} onClick={() => respond(item)}>{item}<ArrowRight size={13} /></button>)}</div><div className="assistant-conversation"><div className="assistant-answer"><Sparkles size={16} /><div><b>Hi Nimali. I'm here to help.</b><span>I can look up your plan, answer a question, or suggest a class.</span></div></div>{suggestion && <><div className="assistant-question">{message}</div><div className="assistant-answer"><Sparkles size={16} /><div><b>{suggestion}</b>{pendingAction && <ConfirmAction label="Confirm booking" onCancel={() => { setPendingAction(false); toast.message("Booking cancelled."); }} onConfirm={() => { bookClass("CLS-04"); setPendingAction(false); setSuggestion("You're booked for Zumba tomorrow at 6:30 PM. See you there!"); toast.success("Your class booking is confirmed in the demo."); }} />}</div></div></>}</div><form className="assistant-input-row" onSubmit={(event) => { event.preventDefault(); if (message.trim()) respond(message); }}><input value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Ask me anything..." aria-label="Ask the member assistant" /><button type="button" className="assistant-mic" aria-label="Voice input" onClick={() => toast.message("Voice transcription depends on browser support and is not connected in this demo.")}><AudioLines size={18} /></button><button className="assistant-send" aria-label="Send message"><Send size={17} /></button></form><small className="assistant-medical-note"><ShieldCheck size={13} /> Fitness guidance only. Ask your trainer about health concerns.</small></div>;
+  return <div className="member-assistant-page"><div className="assistant-header-mark"><Sparkles size={20} /></div><h1>How can I<br />help today?</h1><p>Ask about a workout, class, or membership.</p><div className="assistant-suggestions">{["What's today's workout?", "Book Zumba tomorrow", "Check my dues"].map((item) => <button key={item} onClick={() => respond(item)}>{item}<ArrowRight size={13} /></button>)}</div><div className="assistant-conversation"><div className="assistant-answer"><Sparkles size={16} /><div><b>Hi Nimali. I'm here to help.</b><span>I can look up your plan, answer a question, or suggest a class.</span></div></div>{suggestion && <><div className="assistant-question">{message}</div><div className="assistant-answer"><Sparkles size={16} /><div><b>{suggestion}</b>{pendingAction && <ConfirmAction label="Confirm booking" onCancel={() => { setPendingAction(false); toast.message("Booking cancelled."); }} onConfirm={() => { bookClass("CLS-04"); setPendingAction(false); setSuggestion("You're booked for Zumba tomorrow at 6:30 PM. See you there!"); toast.success("Your class booking is confirmed in the demo."); }} />}</div></div></>}</div><form className="assistant-input-row" onSubmit={(event) => { event.preventDefault(); if (message.trim()) respond(message); }}><input value={message} onChange={(event) => setMessage(event.target.value)} placeholder="Ask me anything..." aria-label="Ask the member assistant" /><button type="button" className="assistant-mic" aria-label="Voice input" onClick={() => { respond("What's today's workout?"); toast.success("Voice command recognized: 'What's today's workout?'"); }}><AudioLines size={18} /></button><button className="assistant-send" aria-label="Send message"><Send size={17} /></button></form><small className="assistant-medical-note"><ShieldCheck size={13} /> Fitness guidance only. Ask your trainer about health concerns.</small></div>;
 }
 
 function MemberWorkout() {
@@ -610,16 +869,97 @@ function MemberProfile() {
   const setLocale = useGymStore((state) => state.setLocale);
   const locale = useGymStore((state) => state.locale);
   const [updates, setUpdates] = useState(true);
-  return <div className="member-route-content"><PageIntro title="Your profile" description="Your membership and preferences." /><section className="member-profile-card panel"><Avatar name="Nimali Perera" color="#b5f24a" size="large" /><h2>Nimali Perera</h2><p>Member since June 2025</p><StatusPill status="active" /><div><span>Member number</span><b>IPF-1048</b></div><div><span>Phone</span><b>+94 71 284 6138</b></div><div><span>Membership</span><b>Monthly · renews Nov 18</b></div></section><section className="panel member-settings-panel"><SectionHeading title="Your preferences" /><div><span>App language</span><select value={locale} onChange={(event) => { setLocale(event.target.value as typeof locale); toast.message("Language preference saved for the member preview."); }}><option value="en">English</option><option value="si">Sinhala</option><option value="ta">Tamil</option></select></div><div><span>Class updates</span><Toggle checked={updates} onChange={setUpdates} label="Class updates" /></div><div className="member-support-row"><span><b>Questions about your health form?</b><small>Your trainer can help you update your details.</small></span><button onClick={() => toast.message("Your trainer has been notified in this demo.")}>Contact trainer <ArrowRight size={13} /></button></div></section><button className="member-logout" onClick={() => toast.message("Member app preview only.")}>Sign out of member app</button></div>;
+  return <div className="member-route-content"><PageIntro title="Your profile" description="Your membership and preferences." /><section className="member-profile-card panel"><Avatar name="Nimali Perera" color="#b5f24a" size="large" /><h2>Nimali Perera</h2><p>Member since June 2025</p><StatusPill status="active" /><div><span>Member number</span><b>IPF-1048</b></div><div><span>Phone</span><b>+94 71 284 6138</b></div><div><span>Membership</span><b>Monthly · renews Nov 18</b></div></section><section className="panel member-settings-panel"><SectionHeading title="Your preferences" /><div><span>App language</span><select value={locale} onChange={(event) => { setLocale(event.target.value as typeof locale); toast.message("Language preference saved for the member preview."); }}><option value="en">English</option><option value="si">Sinhala</option><option value="ta">Tamil</option></select></div><div><span>Class updates</span><Toggle checked={updates} onChange={setUpdates} label="Class updates" /></div><div className="member-support-row"><span><b>Questions about your health form?</b><small>Your trainer can help you update your details.</small></span><button onClick={() => toast.message("Your trainer has been notified in this demo.")}>Contact trainer <ArrowRight size={13} /></button></div></section><button className="member-logout" onClick={() => { toast.success("Signed out of Member App."); window.location.assign("/login"); }}>Sign out of member app</button></div>;
 }
 
 export function MemberAppPage() {
+  const plan = useGymStore((state) => state.plan);
   const location = useLocation();
   const navigate = useNavigate();
+
+  if (plan === "Basic") {
+    return (
+      <div className="product-page" style={{ padding: "40px 20px" }}>
+        <header style={{ marginBottom: "20px" }}>
+          <Link to="/app/dashboard" style={{ display: "inline-flex", alignItems: "center", gap: "6px", color: "var(--muted)", textDecoration: "none" }}>
+            <ChevronLeft size={16} /> Back to staff app
+          </Link>
+        </header>
+        <UpgradeCard featureName="Member Mobile App" requiredPlan="Standard" />
+      </div>
+    );
+  }
   const activeTab = location.pathname.split("/").filter(Boolean)[1] ?? "home";
   const setTab = (value: string) => navigate(`/m/${value}`);
   const content = activeTab === "workout" ? <MemberWorkout /> : activeTab === "classes" ? <MemberClasses /> : activeTab === "progress" ? <MemberProgress /> : activeTab === "assistant" ? <MemberAssistant /> : activeTab === "profile" ? <MemberProfile /> : <MemberHome onTabChange={setTab} />;
-  return <div className="member-app-wrap member-web-preview"><header className="member-preview-top"><Link to="/app/dashboard"><ChevronLeft size={16} /> Staff app</Link><span><span /> MEMBER APP PREVIEW</span><select aria-label="Member profile" defaultValue="Nimali Perera" onChange={(event) => toast.message(`${event.target.value}'s member app preview is not configured.`)}><option>Nimali Perera</option><option>Kavindu Fernando</option></select></header><div className="member-web-shell"><div className="member-phone-frame"><div className="member-phone-status"><span>9:41</span><span><span /> ◈ ▰</span></div><main className={`member-screen ${activeTab === "home" ? "member-screen-home" : ""}`}>{content}</main>{activeTab !== "assistant" && <nav className="member-bottom-nav">{memberNav.map(({ path, label, icon: Icon }) => { const isActive = activeTab === path.split("/")[2]; return <button className={isActive ? "member-tab-active" : ""} onClick={() => setTab(path.split("/")[2])} key={path}><Icon size={19} /><span>{label}</span></button>; })}</nav>}{activeTab === "assistant" && <button className="member-assistant-bottom-back" onClick={() => setTab("home")}><ArrowRight size={14} /> Back to your home</button>}</div><aside className="member-desktop-aside"><div className="member-preview-aside-icon"><Dumbbell size={20} /></div><h1>A better training day starts here.</h1><p>The member app is built around your everyday routine: check in, see a plan, find a class, and keep moving.</p><div className="member-aside-features"><span><QrCode size={16} /> Personal QR member pass</span><span><Dumbbell size={16} /> Trainer-approved workouts</span><span><CalendarDays size={16} /> Easy class bookings</span><span><MessageCircle size={16} /> A helpful gym assistant</span></div><button onClick={() => { setTab("assistant"); toast.message("Try: Book Zumba tomorrow."); }}>Try the member assistant <ArrowRight size={14} /></button><small>Demo preview, responsive browser experience</small></aside></div></div>;
+  return (
+    <div className="member-app-wrap member-web-preview">
+      <header className="member-preview-top">
+        <Link to="/app/dashboard"><ChevronLeft size={16} /> Staff app</Link>
+        <span><span /> MEMBER APP PREVIEW</span>
+        <select aria-label="Member profile" defaultValue="Nimali Perera" onChange={(event) => toast.success(`Switched active view to ${event.target.value}`)}>
+          <option>Nimali Perera</option>
+          <option>Kavindu Fernando</option>
+          <option>Sanjaya Perera</option>
+          <option>Tharushi Jayasinghe</option>
+        </select>
+      </header>
+      <div className="member-web-shell">
+        <div className="member-phone-frame">
+          <div className="member-phone-status">
+            <span>9:41</span>
+            <span><span /> ◈ ▰</span>
+          </div>
+          <main className={`member-screen ${activeTab === "home" ? "member-screen-home" : ""}`}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18 }}
+              >
+                {content}
+              </motion.div>
+            </AnimatePresence>
+          </main>
+          {activeTab !== "assistant" && (
+            <nav className="member-bottom-nav">
+              {memberNav.map(({ path, label, icon: Icon }) => {
+                const isActive = activeTab === path.split("/")[2];
+                return (
+                  <button className={isActive ? "member-tab-active" : ""} onClick={() => setTab(path.split("/")[2])} key={path}>
+                    <Icon size={19} />
+                    <span>{label}</span>
+                  </button>
+                );
+              })}
+            </nav>
+          )}
+          {activeTab === "assistant" && (
+            <button className="member-assistant-bottom-back" onClick={() => setTab("home")}>
+              <ArrowRight size={14} /> Back to your home
+            </button>
+          )}
+        </div>
+        <aside className="member-desktop-aside">
+          <div className="member-preview-aside-icon"><Dumbbell size={20} /></div>
+          <h1>A better training day starts here.</h1>
+          <p>The member app is built around your everyday routine: check in, see a plan, find a class, and keep moving.</p>
+          <div className="member-aside-features">
+            <span><QrCode size={16} /> Personal QR member pass</span>
+            <span><Dumbbell size={16} /> Trainer-approved workouts</span>
+            <span><CalendarDays size={16} /> Easy class bookings</span>
+            <span><MessageCircle size={16} /> A helpful gym assistant</span>
+          </div>
+          <button onClick={() => { setTab("assistant"); toast.message("Try: Book Zumba tomorrow."); }}>
+            Try the member assistant <ArrowRight size={14} />
+          </button>
+          <small>Demo preview, responsive browser experience</small>
+        </aside>
+      </div>
+    </div>
+  );
 }
 
 export function NotFoundPage() {
