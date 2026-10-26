@@ -39,6 +39,7 @@ import {
   Users,
   WalletCards,
   Smartphone,
+  Maximize2,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -876,6 +877,7 @@ export function MemberAppPage() {
   const plan = useGymStore((state) => state.plan);
   const location = useLocation();
   const navigate = useNavigate();
+  const [formatMode, setFormatMode] = useState<"frame" | "clean">("frame");
 
   if (plan === "Basic") {
     return (
@@ -895,8 +897,25 @@ export function MemberAppPage() {
   return (
     <div className="member-app-wrap member-web-preview">
       <header className="member-preview-top">
-        <Link to="/app/dashboard"><ChevronLeft size={16} /> Staff app</Link>
-        <span><span /> MEMBER APP PREVIEW</span>
+        <Link to="/app/dashboard" className="member-back-link"><ChevronLeft size={16} /> Staff app</Link>
+        <div className="member-format-switch">
+          <button
+            type="button"
+            className={formatMode === "frame" ? "active" : ""}
+            onClick={() => setFormatMode("frame")}
+            title="Smartphone mockup format"
+          >
+            <Smartphone size={13} /> Phone
+          </button>
+          <button
+            type="button"
+            className={formatMode === "clean" ? "active" : ""}
+            onClick={() => setFormatMode("clean")}
+            title="Clean mobile web format"
+          >
+            <Maximize2 size={13} /> Clean
+          </button>
+        </div>
         <select aria-label="Member profile" defaultValue="Nimali Perera" onChange={(event) => toast.success(`Switched active view to ${event.target.value}`)}>
           <option>Nimali Perera</option>
           <option>Kavindu Fernando</option>
@@ -905,7 +924,7 @@ export function MemberAppPage() {
         </select>
       </header>
       <div className="member-web-shell">
-        <div className="member-phone-frame">
+        <div className={`member-phone-frame ${formatMode === "clean" ? "phone-clean-mode" : "phone-device-mode"}`}>
           <div className="member-phone-status">
             <span>9:41</span>
             <span><span /> ◈ ▰</span>
@@ -942,21 +961,6 @@ export function MemberAppPage() {
             </button>
           )}
         </div>
-        <aside className="member-desktop-aside">
-          <div className="member-preview-aside-icon"><Dumbbell size={20} /></div>
-          <h1>A better training day starts here.</h1>
-          <p>The member app is built around your everyday routine: check in, see a plan, find a class, and keep moving.</p>
-          <div className="member-aside-features">
-            <span><QrCode size={16} /> Personal QR member pass</span>
-            <span><Dumbbell size={16} /> Trainer-approved workouts</span>
-            <span><CalendarDays size={16} /> Easy class bookings</span>
-            <span><MessageCircle size={16} /> A helpful gym assistant</span>
-          </div>
-          <button onClick={() => { setTab("assistant"); toast.message("Try: Book Zumba tomorrow."); }}>
-            Try the member assistant <ArrowRight size={14} />
-          </button>
-          <small>Demo preview, responsive browser experience</small>
-        </aside>
       </div>
     </div>
   );

@@ -420,89 +420,477 @@ h3, .h3 {
   font-size: 13px !important;
 }
 
-/* --- 8. Member Mobile App Typography & Visuals --- */
-.member-mobile-banner {
-  padding: 28px 20px 24px !important;
-  border-radius: 18px !important;
+/* --- 8. Member Mobile App Device Mockup & Strict Mobile Formatting --- */
+
+/* Outer Shell & Centering */
+.member-app-wrap.member-web-preview {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  min-height: 100dvh !important;
+  padding: 14px 16px 20px !important;
   background:
-    linear-gradient(180deg, rgba(17, 18, 15, 0.4) 0%, rgba(17, 18, 15, 0.95) 100%),
-    url("/images/member-athlete.jpg") center 30% / cover,
+    radial-gradient(ellipse at 50% 12%, rgba(181, 242, 74, 0.08), transparent 45%),
+    radial-gradient(ellipse at 20% 80%, rgba(181, 242, 74, 0.04), transparent 30%),
+    #0c0d0a !important;
+  box-sizing: border-box !important;
+}
+
+.member-preview-top {
+  display: flex !important;
+  width: 100% !important;
+  max-width: 440px !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 8px 12px !important;
+  margin: 0 auto 12px !important;
+  background: rgba(22, 24, 19, 0.92) !important;
+  backdrop-filter: blur(16px) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+}
+
+.member-preview-top a.member-back-link,
+.member-preview-top a {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--muted) !important;
+  text-decoration: none !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  transition: color 150ms ease !important;
+}
+
+.member-preview-top a.member-back-link:hover,
+.member-preview-top a:hover {
+  color: var(--text) !important;
+}
+
+.member-format-switch {
+  display: flex !important;
+  background: #141511 !important;
+  border: 1px solid #282a22 !important;
+  border-radius: 8px !important;
+  padding: 2px !important;
+  gap: 2px !important;
+}
+
+.member-format-switch button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 5px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--muted) !important;
+  cursor: pointer !important;
+  transition: all 150ms ease !important;
+}
+
+.member-format-switch button.active {
+  background: #25281e !important;
+  color: var(--accent) !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+.member-preview-top select {
+  font-size: 12px !important;
+  padding: 5px 8px !important;
+  border-radius: 8px !important;
+  border: 1px solid var(--line) !important;
+  background: var(--panel) !important;
+  color: var(--text) !important;
+}
+
+.member-web-shell {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 auto !important;
+}
+
+/* Realistic Smartphone Device Frame */
+.member-phone-frame,
+.member-web-preview .member-phone-frame {
+  position: relative !important;
+  width: 390px !important;
+  max-width: 100% !important;
+  min-width: 360px !important;
+  height: min(844px, calc(100dvh - 84px)) !important;
+  max-height: 844px !important;
+  min-height: 560px !important;
+  margin: 0 auto !important;
+  background: #11120f !important;
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: all 250ms ease !important;
+}
+
+/* Phone Device Mode (iPhone 15 Pro hardware styling) */
+.member-phone-frame.phone-device-mode {
+  border-radius: 46px !important;
+  border: 11px solid #1a1b16 !important;
+  outline: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.8),
+    0 24px 60px rgba(0, 0, 0, 0.75),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Smartphone Hardware - Dynamic Island Pill */
+.member-phone-frame.phone-device-mode::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 9px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 96px !important;
+  height: 24px !important;
+  border-radius: 20px !important;
+  background: #000 !important;
+  z-index: 30 !important;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) !important;
+  pointer-events: none !important;
+}
+
+/* Smartphone Hardware - Bottom Home Bar */
+.member-phone-frame.phone-device-mode::after {
+  content: "" !important;
+  position: absolute !important;
+  bottom: 6px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 115px !important;
+  height: 4px !important;
+  border-radius: 100px !important;
+  background: rgba(255, 255, 255, 0.38) !important;
+  z-index: 30 !important;
+  pointer-events: none !important;
+}
+
+/* Clean Mobile Mode (borderless sleek mobile view) */
+.member-phone-frame.phone-clean-mode {
+  border-radius: 20px !important;
+  border: 1px solid #282a22 !important;
+  outline: none !important;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.6) !important;
+}
+
+.member-phone-frame.phone-clean-mode::before,
+.member-phone-frame.phone-clean-mode::after {
+  display: none !important;
+}
+
+/* Status Bar */
+.member-phone-status {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  height: 40px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 6px 26px 0 !important;
+  background: transparent !important;
+  color: #f0f1ea !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  z-index: 25 !important;
+  pointer-events: none !important;
+}
+
+/* Screen Scroll Container */
+.member-screen {
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 42px 16px 82px !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+.member-screen::-webkit-scrollbar {
+  display: none !important;
+}
+
+/* Mobile Banner */
+.member-mobile-banner {
+  padding: 22px 18px 18px !important;
+  border-radius: 20px !important;
+  background:
+    linear-gradient(180deg, rgba(17, 18, 15, 0.45) 0%, rgba(17, 18, 15, 0.96) 100%),
+    url("/images/member-athlete.jpg") center 25% / cover,
     #1b1d17 !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4) !important;
 }
 
 .member-mobile-gym-name {
-  font-size: 12px !important;
-  letter-spacing: 0.1em !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-bottom: 12px !important;
+}
+
+.member-mobile-gym-name span {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--accent) !important;
+  letter-spacing: 0.12em !important;
 }
 
 .member-mobile-banner h1 {
-  font-size: 28px !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
   line-height: 1.25 !important;
+  margin: 0 0 6px !important;
 }
 
 .member-mobile-banner p {
-  font-size: 14px !important;
-}
-
-.member-qr-card b {
-  font-size: 16px !important;
-}
-
-.member-qr-card small {
   font-size: 13px !important;
+  color: #cfd2c6 !important;
+  margin: 0 !important;
+}
+
+/* QR Pass Card */
+.member-qr-card {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-top: 16px !important;
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  background: rgba(26, 28, 22, 0.92) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(181, 242, 74, 0.28) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+.member-qr-card > div {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
 }
 
 .member-qr-card span {
-  font-size: 11px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  color: var(--accent) !important;
 }
 
-.member-workout-today h2 {
-  font-size: 17px !important;
+.member-qr-card b {
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  color: var(--text) !important;
 }
 
-.member-workout-today p {
+.member-qr-card small {
+  font-size: 12px !important;
+  color: var(--muted) !important;
+}
+
+/* Today's Workout Card */
+.member-workout-today {
+  margin-top: 14px !important;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--line) !important;
+  background: var(--panel) !important;
+}
+
+.member-section-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 4px !important;
+}
+
+.member-section-row h2 {
+  font-size: 16px !important;
+  font-weight: 650 !important;
+  margin: 0 !important;
+}
+
+.member-section-row button {
+  font-size: 12px !important;
+  color: var(--accent) !important;
+  background: transparent !important;
+  border: none !important;
+  cursor: pointer !important;
+}
+
+.member-workout-today > div > p {
   font-size: 13px !important;
+  color: var(--muted) !important;
+  margin: 0 0 12px !important;
+}
+
+.member-exercise-mini {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  margin-bottom: 8px !important;
+  border-radius: 10px !important;
+  background: #191b15 !important;
+  border: 1px solid var(--line) !important;
+}
+
+.member-exercise-count {
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  color: var(--muted) !important;
 }
 
 .member-exercise-mini b {
-  font-size: 15px !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
 }
 
 .member-exercise-mini small {
-  font-size: 13px !important;
+  font-size: 12px !important;
+  color: var(--muted) !important;
 }
 
 .member-start-button {
-  font-size: 15px !important;
-  min-height: 46px !important;
+  margin-top: 12px !important;
+  width: 100% !important;
+  min-height: 44px !important;
+  font-size: 14px !important;
   font-weight: 650 !important;
+  border-radius: 11px !important;
 }
 
-.member-bottom-nav button span {
+/* Crowd forecast card */
+.member-busy-card {
+  margin-top: 14px !important;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--line) !important;
+  background: var(--panel) !important;
+}
+
+.member-busy-card h2 {
+  font-size: 16px !important;
+  margin: 4px 0 !important;
+}
+
+.member-busy-card p {
   font-size: 12px !important;
-  font-weight: 550 !important;
+  color: var(--muted) !important;
+  margin: 0 !important;
+}
+
+.mini-crowd-chart {
+  display: flex !important;
+  align-items: flex-end !important;
+  gap: 4px !important;
+  height: 44px !important;
+  margin-top: 12px !important;
+}
+
+.mini-crowd-chart span {
+  flex: 1 !important;
+  background: #2a2e23 !important;
+  border-radius: 3px !important;
+}
+
+.mini-crowd-chart .mini-crowd-best {
+  background: var(--accent) !important;
+}
+
+/* Member dues row */
+.member-dues-row {
+  margin-top: 14px !important;
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--line) !important;
+  background: var(--panel) !important;
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  text-align: left !important;
+  cursor: pointer !important;
+}
+
+.member-dues-row b {
+  font-size: 13px !important;
+}
+
+.member-dues-row small {
+  font-size: 11px !important;
+  color: var(--muted) !important;
+}
+
+/* Bottom Navigation Bar */
+.member-bottom-nav {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  height: 68px !important;
+  padding: 6px 4px 10px !important;
+  background: rgba(17, 18, 14, 0.96) !important;
+  backdrop-filter: blur(20px) !important;
+  border-top: 1px solid #282a22 !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, 1fr) !important;
+  align-items: center !important;
+  z-index: 25 !important;
 }
 
 .member-bottom-nav button {
-  padding: 9px 4px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  background: transparent !important;
+  border: none !important;
+  color: #838578 !important;
+  cursor: pointer !important;
+  padding: 4px !important;
 }
 
+.member-bottom-nav button span {
+  font-size: 11px !important;
+  font-weight: 550 !important;
+}
+
+.member-bottom-nav .member-tab-active {
+  color: var(--accent) !important;
+}
+
+/* Assistant page */
 .member-assistant-page h1 {
-  font-size: 28px !important;
+  font-size: 26px !important;
 }
 
 .member-assistant-page p {
-  font-size: 14px !important;
+  font-size: 13px !important;
 }
 
 .assistant-suggestions button {
   font-size: 13px !important;
-  padding: 9px 15px !important;
+  padding: 8px 14px !important;
 }
 
 .assistant-answer b {
   font-size: 14px !important;
-  line-height: 1.5 !important;
 }
 
 .assistant-answer span {
@@ -515,45 +903,71 @@ h3, .h3 {
 }
 
 .assistant-medical-note {
-  font-size: 12px !important;
+  font-size: 11px !important;
 }
 
+/* Workout & classes pages */
 .member-workout-card h2 {
-  font-size: 17px !important;
+  font-size: 16px !important;
 }
 
 .member-workout-card p {
-  font-size: 13px !important;
+  font-size: 12px !important;
 }
 
 .rep-controls b {
-  font-size: 15px !important;
+  font-size: 14px !important;
 }
 
 .rep-controls span {
-  font-size: 13px !important;
+  font-size: 12px !important;
 }
 
 .member-complete-workout {
-  min-height: 46px !important;
-  font-size: 15px !important;
-}
-
-.member-desktop-aside h1 {
-  font-size: 26px !important;
-}
-
-.member-desktop-aside p {
-  font-size: 14px !important;
-}
-
-.member-aside-features span {
-  font-size: 14px !important;
-}
-
-.member-desktop-aside button {
-  font-size: 14px !important;
   min-height: 44px !important;
+  font-size: 14px !important;
+}
+
+/* Desktop Presentation Aside - Hidden in mobile preview */
+.member-desktop-aside,
+.member-web-preview .member-desktop-aside {
+  display: none !important;
+}
+
+/* Responsive Rules for Small Screens */
+@media (max-width: 520px) {
+  .member-app-wrap.member-web-preview {
+    padding: 0 !important;
+    background: #0f100d !important;
+  }
+  .member-preview-top {
+    border-radius: 0 !important;
+    margin: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    padding: 8px 12px !important;
+    max-width: 100% !important;
+  }
+  .member-format-switch {
+    display: none !important;
+  }
+  .member-phone-frame,
+  .member-web-preview .member-phone-frame {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    height: calc(100dvh - 48px) !important;
+    max-height: none !important;
+    border: none !important;
+    outline: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  .member-phone-frame::before,
+  .member-phone-frame::after {
+    display: none !important;
+  }
 }
 
 /* --- 9. Interactive Motion Effects --- */
